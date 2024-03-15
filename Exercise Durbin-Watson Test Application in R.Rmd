@@ -1,0 +1,75 @@
+---
+title: "Exercise: Durbin-Watson Test Application in R"
+author: "Dr. BENGHALEM Abdelhadi"
+output:
+  html_notebook:
+    toc: yes
+    fig_caption: yes
+    theme: journal
+  pdf_document:
+    toc: yes
+    editor_options:
+  chunk_output_type: inline
+---
+
+Exercise: Durbin-Watson Test Application in R
+
+Objective: To apply the Durbin-Watson test in R to assess autocorrelation in the residuals of a linear regression model.
+
+Instructions:
+
+1.  Load the necessary R packages.
+
+2.  Import the mtcars dataset.
+
+3.  Fit a linear regression model using the **`lm()`** function, with mpg as the response variable and disp and wt as the explanatory variables.
+
+4.  Perform the Durbin-Watson test using the **`dwtest()`** function from the "lmtest" package.
+
+5.  Interpret the results of the Durbin-Watson test
+
+install.packages("lmtest")install.packages("lmtest")
+
+```{r}
+# Load required packages
+library(lmtest)
+```
+
+```{r}
+# Import dataset
+data(mtcars)
+```
+
+```{r}
+head(mtcars)
+```
+
+```{r}
+class(mtcars)
+```
+
+```{r}
+# Fit linear regression model
+model <- lm(mpg ~ disp + wt, data = mtcars)
+summary(model)
+```
+
+```{r}
+durbin_watson <- dwtest(model)
+```
+
+```{r}
+dwtest(model)
+```
+
+```{r}
+# Interpret results
+if (durbin_watson$p.value < 0.05) {
+  cat("Autocorrelation detected. Consider model modification or alternative regression methods.")
+} else {
+  cat("No significant autocorrelation detected.")
+}
+
+```
+
+From the output we can see that the test statistic is **1.2766** and the corresponding p-value is **0.01**. Since this p-value is less than 0.05, we can reject the null hypothesis and conclude that the residuals in this regression model are autocorrelated.
