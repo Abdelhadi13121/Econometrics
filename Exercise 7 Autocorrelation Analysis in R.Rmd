@@ -1,0 +1,151 @@
+---
+title: "Exercise 7: Autocorrelation Analysis in R"
+author: "Dr. BENGHALEM Abdelhadi"
+output:
+  html_notebook:
+    toc: yes
+    fig_caption: yes
+    theme: journal
+  pdf_document:
+    toc: yes
+    editor_options:
+  chunk_output_type: inline
+---
+
+![](images/clipboard-408863450.png)
+
+# Exercise:
+
+Dataset: For this exercise, we will use the "mtcars" dataset from the base R package.
+
+Questions:
+
+1.  Estimate the coefficients of the linear regression model using miles per gallon (mpg) as the response variable and displacement (disp) and weight (wt) as explanatory variables.
+
+2.  Perform graphical analysis of the residuals to check for patterns or trends.
+
+3.  Calculate the Durbin-Watson statistic and perform the test for autocorrelation.
+
+4.  Finally, conduct the Breusch-Godfrey test for autocorrelation.
+
+# solution:
+
+## Estimate the coefficients of the linear regression model:
+
+```{r}
+# Fit the linear regression model
+model <- lm(mpg ~ disp + wt, mtcars)
+summary(model)
+```
+
+1.  Residuals:
+
+    -   The residuals represent the differences between the observed and predicted values of mpg. They show a range from -3.4087 to 6.3484, with quartiles indicating variability around the median.
+
+2.  Coefficients:
+
+    -   Intercept: The estimated intercept is 34.96055, suggesting that when both disp and wt are zero, the expected mpg is approximately 34.96.
+
+    -   Disp: The coefficient estimate for disp is -0.01773, indicating that for each one-unit increase in disp, the mpg is expected to decrease by approximately 0.01773 units. However, the p-value (0.06362) suggests that this effect is not statistically significant at the conventional significance level of 0.05.
+
+    -   Wt: The coefficient estimate for wt is -3.35082, meaning that for each one-unit increase in wt, the mpg is expected to decrease by approximately 3.35082 units. This effect is statistically significant, as indicated by the low p-value (0.00743).
+
+3.  Model Fit:
+
+    -   The model's residual standard error is 2.917, indicating the average deviation of observed values from the fitted values.
+
+    -   The multiple R-squared value (0.7809) suggests that approximately 78.09% of the variability in mpg is explained by the model's predictors.
+
+    -   The adjusted R-squared (0.7658) considers the number of predictors and adjusts the R-squared value accordingly.
+
+    -   The F-statistic (51.69) tests the overall significance of the model, with a very low p-value (2.744e-10), indicating that the model as a whole is statistically significant.
+
+Overall, the model provides a reasonable fit to the data, with weight (wt) being a significant predictor of mpg, while displacement (disp) shows some suggestive evidence but not statistically significant at the 0.05 significance level.
+
+## Perform graphical analysis of the residuals:
+
+```{r}
+# Graphical analysis of residuals
+plot(residuals(model))
+abline(h = 0, col = "red")
+```
+
+```{r}
+#Check for errors distribution using density 
+plot(density(residuals(model)))
+```
+
+```{r}
+#Could be used to chech fo homoscedasticity
+plot(fitted(model), residuals(model))
+abline(0, 0, col = "red")
+```
+
+Plotting residuals shows the distribution or pattern of the residuals themselves, which helps in understanding their behavior and identifying any patterns or trends. On the other hand, plotting residuals against the fitted values (or predicted values) helps in assessing the assumption of homoscedasticity (constant variance of residuals) and detecting any patterns or trends in how the residuals change with the fitted values
+
+## Durbin-Watson Statistic and Test for Autocorrelation:
+
+```{r}
+# Calculate Durbin-Watson statistic
+library(lmtest)
+dwtest(model)
+```
+
+-   Since the p-value is less than the significance level (usually 0.05), we reject the null hypothesis.
+
+-   The alternative hypothesis states that there is autocorrelation present in the residuals, specifically that the autocorrelation coefficient is greater than 0.
+
+-   Therefore, based on the results of the Durbin-Watson test, we conclude that there is evidence of positive autocorrelation in the residuals of the model.
+
+## Breusch-Godfrey Test for Autocorrelation:
+
+```{r}
+bgtest(model, order = 1)
+```
+
+With a significant p-value, we conclude that there is evidence of serial correlation up to order 1 in the residuals of the model.
+
+## The Ljung-Box test
+
+```{r}
+# Ljung-Box test
+Box.test(residuals(model), lag = 12, type = "Ljung-Box")
+```
+
+The computed test statistic is X-squared = 17.631 with 12 degrees of freedom, and the associated p-value is 0.1274.
+
+Interpretation:
+
+-   With a non-significant p-value, we conclude that there is no evidence of autocorrelation in the residuals of the model.
+
+# Summary
+
+The Durbin-Watson test and the Ljung-Box test are both used to detect autocorrelation in the residuals of a regression model, but they have different focuses and interpretations:
+
+-   Durbin-Watson Test:
+
+    -   Focus: Specifically examines for first-order autocorrelation (lag 1).
+
+    -   Interpretation:
+
+        -   If the test statistic (DW) is close to 2, it suggests no autocorrelation.
+
+        -   If DW \< 2, it indicates positive autocorrelation.
+
+        -   If DW \> 2, it indicates negative autocorrelation.
+
+    -   Usage: Suitable for detecting simple first-order autocorrelation.
+
+-   Ljung-Box Test:
+
+    1.  Focus: Tests for autocorrelation at multiple lags, providing a more comprehensive assessment.
+
+    2.  Interpretation:
+
+        -   It assesses whether autocorrelation exists at any of the specified lags.
+
+        -   Returns a p-value, with lower values suggesting significant autocorrelation.
+
+    3.  Usage: More flexible for detecting autocorrelation at different lags, allowing for a broader examination of the time series structure.
+
+Choosing between the Durbin-Watson, Ljung-Box, and Breusch-Godfrey tests depends on the specific objectives of the analysis and the expected autocorrelation patterns in the data. The Durbin-Watson test is suitable for a quick check of first-order autocorrelation, while the Ljung-Box test offers a broader assessment of autocorrelation at multiple lags. The Breusch-Godfrey test extends the analysis to detect autocorrelation up to a specified lag, making it suitable for more comprehensive autocorrelation examinations.
